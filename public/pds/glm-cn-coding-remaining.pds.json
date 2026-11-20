@@ -11,13 +11,11 @@
     "api_key": {
       "type": "string",
       "label": "GLM 中国区 Coding Plan Key",
-      "description": "填写明文 Key；或先在「秘密」页保存，再填入 $名称$ 引用。",
       "required": true
     },
     "alert_threshold": {
       "type": "number",
       "label": "低额度提醒阈值（%）",
-      "description": "当前值低于此阈值时提醒，单位：%。",
       "default": 15,
       "required": true,
       "min": 0

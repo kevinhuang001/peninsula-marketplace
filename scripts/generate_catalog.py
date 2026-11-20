@@ -35,17 +35,12 @@ def icon(logo, bg, fg="#ffffff"):
     return {"mime": "image/svg+xml", "base64": base64.b64encode(svg.encode()).decode()}
 
 
-def threshold(label, default, suffix):
-    return {"type": "number", "label": label, "description": f"当前值低于此阈值时提醒，单位：{suffix}。", "default": default, "required": True, "min": 0}
+def threshold(label, default):
+    return {"type": "number", "label": label, "default": default, "required": True, "min": 0}
 
 
 def api_key(label):
-    return {
-        "type": "string",
-        "label": label,
-        "description": "填写明文 Key；或先在「秘密」页保存，再填入 $名称$ 引用。",
-        "required": True,
-    }
+    return {"type": "string", "label": label, "required": True}
 
 
 def source(id, name, description, logo, color, method, url, path, *, headers=None, query=None,
@@ -75,7 +70,7 @@ for period, title, color in [
         "opencode", color, "GET", "https://opencode.ai/zen/go/v1/usage",
         f"$.usage.{period}.percent", headers={"Authorization": "Bearer ${input.api_key}", "Accept": "application/json"},
         inputs={"api_key": api_key("OpenCode Go 套餐 API Key"),
-                "alert_threshold": threshold("低额度提醒阈值（%）", 15, "%")},
+                "alert_threshold": threshold("低额度提醒阈值（%）", 15)},
         multiply=-1, offset=100, suffix="%", alert=True))
 
 ai.append(source(
@@ -85,7 +80,7 @@ ai.append(source(
     "$.balance_infos[?(@.currency=='CNY')].total_balance",
     headers={"Authorization": "Bearer ${input.api_key}", "Accept": "application/json"},
     inputs={"api_key": api_key("DeepSeek API Key"),
-            "alert_threshold": threshold("低余额提醒阈值（元）", 10, "元")},
+            "alert_threshold": threshold("低余额提醒阈值（元）", 10)},
     decimals=2, suffix=" 元", alert=True))
 
 ai.append(source(
@@ -95,7 +90,7 @@ ai.append(source(
     "$.data.limits[?(@.type=='TOKENS_LIMIT')].percentage",
     headers={"Authorization": "${input.api_key}", "Accept": "application/json"},
     inputs={"api_key": api_key("GLM 中国区 Coding Plan Key"),
-            "alert_threshold": threshold("低额度提醒阈值（%）", 15, "%")},
+            "alert_threshold": threshold("低额度提醒阈值（%）", 15)},
     multiply=-1, offset=100, suffix="%", alert=True))
 
 ai.append(source(
@@ -105,7 +100,7 @@ ai.append(source(
     "$.model_remains[?(@.model_name=='general')].current_interval_remaining_percent",
     headers={"Authorization": "Bearer ${input.api_key}", "Accept": "application/json"},
     inputs={"api_key": api_key("MiniMax 中国区 Coding Plan Key"),
-            "alert_threshold": threshold("低额度提醒阈值（%）", 15, "%")},
+            "alert_threshold": threshold("低额度提醒阈值（%）", 15)},
     suffix="%", alert=True))
 
 others = [

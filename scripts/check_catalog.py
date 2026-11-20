@@ -33,5 +33,6 @@ for file in files:
         assert data['alert']['threshold'] == '${input.alert_threshold}'
         assert data['inputs']['alert_threshold']['type'] == 'number'
         assert data['inputs']['api_key']['type'] == 'string'
-        assert '$名称$' in data['inputs']['api_key']['description']
+        assert 'description' not in data['inputs']['api_key']
+        assert 'description' not in data['inputs']['alert_threshold']
 print(f'Checked {len(files)} data sources, string-only API keys, and path-based icons')
