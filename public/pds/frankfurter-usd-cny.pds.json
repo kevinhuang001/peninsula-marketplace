@@ -1,0 +1,32 @@
+{
+  "schema": "peninsula.datasource/v1",
+  "id": "frankfurter-usd-cny",
+  "name": "美元兑人民币汇率",
+  "description": "Frankfurter 最新 USD/CNY 参考汇率，数据按其公布频率更新。",
+  "icon": {
+    "mime": "image/svg+xml",
+    "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iIzNDOEE3MiIvPjx0ZXh0IHg9IjMyIiB5PSI0MyIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzNCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPsKlPC90ZXh0Pjwvc3ZnPg=="
+  },
+  "inputs": {},
+  "request": {
+    "method": "GET",
+    "url": "https://api.frankfurter.dev/v1/latest",
+    "headers": {},
+    "query": {
+      "base": "USD",
+      "symbols": "CNY"
+    },
+    "timeout_ms": 10000
+  },
+  "value": {
+    "path": "$.rates.CNY",
+    "type": "number",
+    "multiply": 1,
+    "divide": 1,
+    "offset": 0,
+    "decimals": 4,
+    "separator": false,
+    "prefix": "",
+    "suffix": " CNY"
+  }
+}

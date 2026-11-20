@@ -1,0 +1,32 @@
+{
+  "schema": "peninsula.datasource/v1",
+  "id": "coingecko-bitcoin-usd",
+  "name": "Bitcoin · 美元报价",
+  "description": "CoinGecko 公共 Simple Price API 返回的比特币美元现价。公共接口可能限流。",
+  "icon": {
+    "mime": "image/svg+xml",
+    "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iI0JEOEIzOSIvPjx0ZXh0IHg9IjMyIiB5PSI0MyIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzNCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPuKCvzwvdGV4dD48L3N2Zz4="
+  },
+  "inputs": {},
+  "request": {
+    "method": "GET",
+    "url": "https://api.coingecko.com/api/v3/simple/price",
+    "headers": {},
+    "query": {
+      "ids": "bitcoin",
+      "vs_currencies": "usd"
+    },
+    "timeout_ms": 10000
+  },
+  "value": {
+    "path": "$.bitcoin.usd",
+    "type": "number",
+    "multiply": 1,
+    "divide": 1,
+    "offset": 0,
+    "decimals": 2,
+    "separator": false,
+    "prefix": "",
+    "suffix": " USD"
+  }
+}

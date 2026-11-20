@@ -1,0 +1,51 @@
+{
+  "schema": "peninsula.datasource/v1",
+  "id": "open-meteo-shanghai-temperature",
+  "name": "上海实时气温",
+  "description": "Open-Meteo 当前 2 米气温。经纬度可在导入后调整，默认上海。",
+  "icon": {
+    "mime": "image/svg+xml",
+    "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iI0Q4OEI0MiIvPjx0ZXh0IHg9IjMyIiB5PSI0MyIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzNCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPuKYgDwvdGV4dD48L3N2Zz4="
+  },
+  "inputs": {
+    "latitude": {
+      "type": "number",
+      "label": "纬度",
+      "default": 31.2304,
+      "required": true,
+      "min": -90,
+      "max": 90
+    },
+    "longitude": {
+      "type": "number",
+      "label": "经度",
+      "default": 121.4737,
+      "required": true,
+      "min": -180,
+      "max": 180
+    }
+  },
+  "request": {
+    "method": "GET",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "headers": {},
+    "query": {
+      "latitude": "${input.latitude}",
+      "longitude": "${input.longitude}",
+      "current": "temperature_2m",
+      "timezone": "auto"
+    },
+    "timeout_ms": 10000
+  },
+  "value": {
+    "path": "$.current.temperature_2m",
+    "type": "number",
+    "multiply": 1,
+    "divide": 1,
+    "offset": 0,
+    "decimals": 1,
+    "separator": false,
+    "prefix": "",
+    "suffix": " °C"
+  }
+}

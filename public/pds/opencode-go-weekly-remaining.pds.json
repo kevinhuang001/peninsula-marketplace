@@ -1,0 +1,52 @@
+{
+  "schema": "peninsula.datasource/v1",
+  "id": "opencode-go-weekly-remaining",
+  "name": "OpenCode Go · 每周剩余",
+  "description": "通过官方套餐 Usage API 读取已使用百分比，并换算为剩余百分比。需要 OpenCode Go 套餐 API Key；未知或无限额度不会伪装成数值。",
+  "icon": {
+    "mime": "image/svg+xml",
+    "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iIzIxNkE3MCIvPjx0ZXh0IHg9IjMyIiB5PSI0MyIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzNCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPk88L3RleHQ+PC9zdmc+"
+  },
+  "inputs": {
+    "api_key": {
+      "type": "secret",
+      "label": "OpenCode Go 套餐 API Key",
+      "required": true
+    },
+    "alert_threshold": {
+      "type": "number",
+      "label": "低额度提醒阈值（%）",
+      "description": "当前值低于此阈值时提醒，单位：%。",
+      "default": 15,
+      "required": true,
+      "min": 0
+    }
+  },
+  "request": {
+    "method": "GET",
+    "url": "https://opencode.ai/zen/go/v1/usage",
+    "headers": {
+      "Authorization": "Bearer ${input.api_key}",
+      "Accept": "application/json"
+    },
+    "query": {},
+    "timeout_ms": 10000
+  },
+  "value": {
+    "path": "$.usage.weekly.percent",
+    "type": "number",
+    "multiply": -1,
+    "divide": 1,
+    "offset": 100,
+    "decimals": 0,
+    "separator": true,
+    "prefix": "",
+    "suffix": "%"
+  },
+  "alert": {
+    "operator": "lt",
+    "threshold": "${input.alert_threshold}",
+    "title": "OpenCode Go · 每周剩余偏低",
+    "message": "当前剩余 ${value}，低于设定阈值，请检查额度。"
+  }
+}

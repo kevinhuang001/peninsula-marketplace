@@ -1,0 +1,52 @@
+{
+  "schema": "peninsula.datasource/v1",
+  "id": "deepseek-cny-balance",
+  "name": "DeepSeek · 人民币余额",
+  "description": "通过官方余额 API 读取 CNY 账户总余额。仅适用于返回人民币余额的账户；需要 DeepSeek API Key。",
+  "icon": {
+    "mime": "image/svg+xml",
+    "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iIzM0NjlCMiIvPjx0ZXh0IHg9IjMyIiB5PSI0MyIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzNCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPkQ8L3RleHQ+PC9zdmc+"
+  },
+  "inputs": {
+    "api_key": {
+      "type": "secret",
+      "label": "DeepSeek API Key",
+      "required": true
+    },
+    "alert_threshold": {
+      "type": "number",
+      "label": "低余额提醒阈值（元）",
+      "description": "当前值低于此阈值时提醒，单位：元。",
+      "default": 10,
+      "required": true,
+      "min": 0
+    }
+  },
+  "request": {
+    "method": "GET",
+    "url": "https://api.deepseek.com/user/balance",
+    "headers": {
+      "Authorization": "Bearer ${input.api_key}",
+      "Accept": "application/json"
+    },
+    "query": {},
+    "timeout_ms": 10000
+  },
+  "value": {
+    "path": "$.balance_infos[?(@.currency=='CNY')].total_balance",
+    "type": "number",
+    "multiply": 1,
+    "divide": 1,
+    "offset": 0,
+    "decimals": 2,
+    "separator": false,
+    "prefix": "",
+    "suffix": " 元"
+  },
+  "alert": {
+    "operator": "lt",
+    "threshold": "${input.alert_threshold}",
+    "title": "DeepSeek · 人民币余额偏低",
+    "message": "当前剩余 ${value}，低于设定阈值，请检查额度。"
+  }
+}

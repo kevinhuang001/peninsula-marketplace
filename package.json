@@ -1,0 +1,22 @@
+{
+  "name": "peninsula-marketplace",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "generate": "python3 scripts/generate_catalog.py",
+    "build": "npm run generate && astro build && touch docs/.nojekyll",
+    "dev": "npm run generate && astro dev --host 0.0.0.0",
+    "check": "python3 scripts/check_catalog.py && astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@mantine/core": "^8.3.10",
+    "@mantine/hooks": "^8.3.10",
+    "astro": "^5.16.0",
+    "lucide-react": "^0.554.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {"@astrojs/check": "^0.9.6", "typescript": "^5.9.3"}
+}
