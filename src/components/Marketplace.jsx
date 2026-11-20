@@ -24,7 +24,7 @@ function SourceDetail({ item, onClose }) {
       <div className="detail-facts"><div><small>数据提供方</small><strong>{item.provider}</strong></div><div><small>认证方式</small><strong>{item.auth}</strong></div><div><small>显示单位</small><strong>{item.unit}</strong></div></div>
       {item.alert && <div className="alert-box"><BellRing size={20}/><div><strong>低额度预警已配置</strong><p>{item.alert}。导入后可修改阈值，并设置刷新间隔和提醒冷却。</p></div></div>}
       {item.note && <p className="compat-note">兼容提示：{item.note}</p>}
-      <div className="detail-instructions"><span className="eyebrow">如何使用</span><ol><li>下载 <code>.pds.json</code> 定义文件</li><li>在 Peninsula 的「数据源」中选择导入</li><li>填写{item.auth === '无需密钥' ? '参数' : '密钥与提醒阈值'}，设置刷新间隔</li></ol></div>
+      <div className="detail-instructions"><span className="eyebrow">如何使用</span><ol><li>下载 <code>.pds.json</code> 定义文件</li><li>在 Peninsula 的「数据源」中选择导入</li><li>填写{item.auth === '无需密钥' ? '参数' : '明文密钥或 $名称$，并设置提醒阈值'}，设置刷新间隔</li></ol></div>
       <div className="detail-actions"><Button component="a" href={downloadUrl(item.id)} download={`${item.id}.pds.json`} size="md" leftSection={<Download size={17}/>} className="download-button">下载 pds.json</Button><a className="source-link" href={item.source} target="_blank" rel="noopener noreferrer">查看接口来源 <ArrowUpRight size={15}/></a></div>
     </>}
   </Modal>;
