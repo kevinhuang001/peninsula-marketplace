@@ -151,6 +151,7 @@ def github_source():
             "pull_requests": {
                 "name": "开放 PR",
                 "capsule_text": "PR: ${value}",
+                "capsule_layout": "two_line",
                 "request": "pull_requests",
                 "value": {"path": "$.total_count", "type": "number",
                           "decimals": 0, "separator": True, "suffix": " 个"},
@@ -161,6 +162,7 @@ def github_source():
             "issues": {
                 "name": "开放 Issue",
                 "capsule_text": "Issue: ${value}",
+                "capsule_layout": "two_line",
                 "request": "issues",
                 "value": {"path": "$.total_count", "type": "number",
                           "decimals": 0, "separator": True, "suffix": " 个"},
@@ -171,6 +173,7 @@ def github_source():
             "stars": {
                 "name": "Star 数",
                 "capsule_text": "Star: ${value}",
+                "capsule_layout": "two_line",
                 "request": "repository",
                 "value": {"path": "$.stargazers_count", "type": "number",
                           "decimals": 0, "separator": True, "suffix": " 个"},
