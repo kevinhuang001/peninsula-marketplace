@@ -1,0 +1,47 @@
+name: Capture marketplace screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/capture-screenshots.yml
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run build
+      - name: Install browser
+        run: |
+          npx --yes playwright --version
+          npx --yes playwright install --with-deps chromium
+      - name: Capture pages
+        run: |
+          mkdir -p screenshots
+          ln -s docs peninsula-marketplace
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/preview-server.log 2>&1 &
+          sleep 3
+          npx --yes playwright screenshot --browser chromium --viewport-size "1440,900" --full-page --wait-for-timeout 3000 http://127.0.0.1:8765/peninsula-marketplace/ screenshots/desktop.png
+          npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page --wait-for-timeout 3000 http://127.0.0.1:8765/peninsula-marketplace/ screenshots/mobile.png
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add screenshots/
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: capture marketplace screenshots"
+            git push
+          fi
