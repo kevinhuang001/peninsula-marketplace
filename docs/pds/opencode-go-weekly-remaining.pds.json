@@ -1,8 +1,8 @@
 {
   "schema": "peninsula.datasource/v1",
   "id": "opencode-go-weekly-remaining",
-  "name": "OpenCode Go · 每周剩余",
-  "description": "通过官方套餐 Usage API 读取已使用百分比，并换算为剩余百分比。需要 OpenCode Go 套餐 API Key；未知或无限额度不会伪装成数值。",
+  "name": "OpenCode Go 每周剩余",
+  "description": "显示 OpenCode Go 套餐的剩余百分比，需填写套餐 API Key。",
   "icon": {
     "mime": "image/svg+xml",
     "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iIzIxNkE3MCIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE0IDE0KSBzY2FsZSgxLjUpIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xNiA2SDh2MTJoOFY2em00IDE2SDRWMmgxNnYyMHoiPjwvcGF0aD48L2c+PC9zdmc+"
@@ -45,7 +45,7 @@
   "alert": {
     "operator": "lt",
     "threshold": "${input.alert_threshold}",
-    "title": "OpenCode Go · 每周剩余偏低",
-    "message": "当前剩余 ${value}，低于设定阈值，请检查额度。"
+    "title": "OpenCode Go 每周剩余偏低",
+    "message": "剩余 ${value}，已低于提醒阈值。"
   }
 }
