@@ -100,59 +100,79 @@ ai.append(source(
     suffix="%", alert=True))
 
 def github_source():
-    # GraphQL reads PRs, Issues and Stars with one network request.
-    # A GitHub token is required for GraphQL (public repositories need no extra scopes).
+    # One imported source can read several independent public REST URLs.
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "Peninsula-Marketplace",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
     return {
         "schema": "peninsula.datasource/v2",
         "id": "github-repository",
         "name": "GitHub 仓库",
         "name_template": "${input.repo}",
-        "description": "一次读取仓库的开放 PR、开放 Issue 和 Star 数。PR 与 Issue 按开放数量净增长提醒。",
+        "description": "一个数据源分别读取开放 PR、开放 Issue 和 Star 数，PR/Issue 净增加时可提醒。",
         "icon": icon("github", "#374654"),
         "inputs": {
             "owner": {"type": "string", "label": "仓库所有者",
                       "default": "kevinhuang001", "required": True},
             "repo": {"type": "string", "label": "仓库名",
                      "default": "peninsula", "required": True},
-            "api_key": api_key("GitHub Token")
         },
-        "request": {
-            "method": "POST",
-            "url": "https://api.github.com/graphql",
-            "headers": {
-                "Authorization": "Bearer ${input.api_key}",
-                "Accept": "application/vnd.github+json",
-                "User-Agent": "Peninsula-Marketplace"
+        "requests": {
+            "pull_requests": {
+                "method": "GET",
+                "url": "https://api.github.com/search/issues",
+                "headers": headers,
+                "query": {
+                    "q": "repo:${input.owner}/${input.repo} is:pr is:open",
+                    "per_page": "1",
+                },
+                "timeout_ms": 10000,
             },
-            "body": {
-                "query": "query($owner:String!, $repo:String!){repository(owner:$owner,name:$repo){pullRequests(states:OPEN){totalCount} issues(states:OPEN){totalCount} stargazerCount}}",
-                "variables": {"owner": "${input.owner}", "repo": "${input.repo}"}
+            "issues": {
+                "method": "GET",
+                "url": "https://api.github.com/search/issues",
+                "headers": headers,
+                "query": {
+                    "q": "repo:${input.owner}/${input.repo} is:issue is:open",
+                    "per_page": "1",
+                },
+                "timeout_ms": 10000,
             },
-            "timeout_ms": 10000
+            "repository": {
+                "method": "GET",
+                "url": "https://api.github.com/repos/${input.owner}/${input.repo}",
+                "headers": headers,
+                "timeout_ms": 10000,
+            },
         },
         "values": {
             "pull_requests": {
                 "name": "开放 PR",
-                "value": {"path": "$.data.repository.pullRequests.totalCount", "type": "number",
+                "request": "pull_requests",
+                "value": {"path": "$.total_count", "type": "number",
                           "decimals": 0, "separator": True, "suffix": " 个"},
                 "alert": {"mode": "change", "operator": "gt", "threshold": 0,
-                          "title": "${input.repo} PR 有增加",
-                          "message": "开放 PR 净增 ${delta} 个，目前 ${value}。"}
+                          "title": "${input.repo} PR 增加",
+                          "message": "开放 PR 净增 ${delta} 个，目前 ${value}。"},
             },
             "issues": {
                 "name": "开放 Issue",
-                "value": {"path": "$.data.repository.issues.totalCount", "type": "number",
+                "request": "issues",
+                "value": {"path": "$.total_count", "type": "number",
                           "decimals": 0, "separator": True, "suffix": " 个"},
                 "alert": {"mode": "change", "operator": "gt", "threshold": 0,
-                          "title": "${input.repo} Issue 有增加",
-                          "message": "开放 Issue 净增 ${delta} 个，目前 ${value}。"}
+                          "title": "${input.repo} Issue 增加",
+                          "message": "开放 Issue 净增 ${delta} 个，目前 ${value}。"},
             },
             "stars": {
                 "name": "Star 数",
-                "value": {"path": "$.data.repository.stargazerCount", "type": "number",
-                          "decimals": 0, "separator": True, "suffix": " 个"}
-            }
-        }
+                "request": "repository",
+                "value": {"path": "$.stargazers_count", "type": "number",
+                          "decimals": 0, "separator": True, "suffix": " 个"},
+            },
+        },
     }
 
 
