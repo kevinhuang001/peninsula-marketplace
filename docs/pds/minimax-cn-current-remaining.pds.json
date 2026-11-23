@@ -1,8 +1,8 @@
 {
   "schema": "peninsula.datasource/v1",
   "id": "minimax-cn-current-remaining",
-  "name": "MiniMax · 当前周期剩余",
-  "description": "中国区 Coding Plan 的 general 额度池当前周期剩余百分比。仅支持返回显式 remaining_percent 的套餐响应。",
+  "name": "MiniMax 当前周期剩余",
+  "description": "显示中国区 Coding Plan 当前周期剩余百分比，需填写中国区套餐 Key。",
   "icon": {
     "mime": "image/svg+xml",
     "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iI0Q4NkI0OCIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE0IDE0KSBzY2FsZSgxLjUpIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xNi4yNzggMmMxLjE1NiAwIDIuMDkzLjkyNyAyLjA5MyAyLjA3djEyLjUwMWEuNzQuNzQgMCAwMC43NDQuNzA5Ljc0Ljc0IDAgMDAuNzQzLS43MDlWOS4wOTlhMi4wNiAyLjA2IDAgMDEyLjA3MS0yLjA0OUEyLjA2IDIuMDYgMCAwMTI0IDkuMXY2LjU2MWEuNjQ5LjY0OSAwIDAxLS42NTIuNjQ1LjY0OS42NDkgMCAwMS0uNjUzLS42NDVWOS4xYS43NjIuNzYyIDAgMDAtLjc2Ni0uNzU4Ljc2Mi43NjIgMCAwMC0uNzY2Ljc1OHY3LjQ3MmEyLjAzNyAyLjAzNyAwIDAxLTIuMDQ4IDIuMDI2IDIuMDM3IDIuMDM3IDAgMDEtMi4wNDgtMi4wMjZ2LTEyLjVhLjc4NS43ODUgMCAwMC0uNzg4LS43NTMuNzg1Ljc4NSAwIDAwLS43ODkuNzUybC0uMDAxIDE1LjkwNEEyLjAzNyAyLjAzNyAwIDAxMTMuNDQxIDIyYTIuMDM3IDIuMDM3IDAgMDEtMi4wNDgtMi4wMjZWMTguMDRjMC0uMzU2LjI5Mi0uNjQ1LjY1Mi0uNjQ1LjM2IDAgLjY1Mi4yODkuNjUyLjY0NXYxLjkzNGMwIC4yNjMuMTQyLjUwNi4zNzIuNjM4LjIzLjEzMS41MTQuMTMxLjc0NCAwYS43MzQuNzM0IDAgMDAuMzcyLS42MzhWNC4wN2MwLTEuMTQzLjkzNy0yLjA3IDIuMDkzLTIuMDd6bS01LjY3NCAwYzEuMTU2IDAgMi4wOTMuOTI3IDIuMDkzIDIuMDd2MTEuNTIzYS42NDguNjQ4IDAgMDEtLjY1Mi42NDUuNjQ4LjY0OCAwIDAxLS42NTItLjY0NVY0LjA3YS43ODUuNzg1IDAgMDAtLjc4OS0uNzguNzg1Ljc4NSAwIDAwLS43ODkuNzh2MTQuMDEzYTIuMDYgMi4wNiAwIDAxLTIuMDcgMi4wNDggMi4wNiAyLjA2IDAgMDEtMi4wNzEtMi4wNDhWOS4xYS43NjIuNzYyIDAgMDAtLjc2Ni0uNzU4Ljc2Mi43NjIgMCAwMC0uNzY2Ljc1OHYzLjhhMi4wNiAyLjA2IDAgMDEtMi4wNzEgMi4wNDlBMi4wNiAyLjA2IDAgMDEwIDEyLjl2LTEuMzc4YzAtLjM1Ny4yOTItLjY0Ni42NTItLjY0Ni4zNiAwIC42NTMuMjkuNjUzLjY0NlYxMi45YzAgLjQxOC4zNDMuNzU3Ljc2Ni43NTdzLjc2Ni0uMzM5Ljc2Ni0uNzU3VjkuMDk5YTIuMDYgMi4wNiAwIDAxMi4wNy0yLjA0OCAyLjA2IDIuMDYgMCAwMTIuMDcxIDIuMDQ4djguOTg0YzAgLjQxOS4zNDMuNzU4Ljc2Ny43NTguNDIzIDAgLjc2Ni0uMzM5Ljc2Ni0uNzU4VjQuMDdjMC0xLjE0My45MzctMi4wNyAyLjA5My0yLjA3eiI+PC9wYXRoPjwvZz48L3N2Zz4="
@@ -45,7 +45,7 @@
   "alert": {
     "operator": "lt",
     "threshold": "${input.alert_threshold}",
-    "title": "MiniMax · 当前周期剩余偏低",
-    "message": "当前剩余 ${value}，低于设定阈值，请检查额度。"
+    "title": "MiniMax 当前周期剩余偏低",
+    "message": "剩余 ${value}，已低于提醒阈值。"
   }
 }

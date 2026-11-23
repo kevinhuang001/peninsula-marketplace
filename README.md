@@ -1,6 +1,8 @@
 # Peninsula Marketplace
 
-基于 Astro、React 和 Mantine 的 Peninsula 数据源目录。站点提供分类、搜索、详情和 `.pds.json` 下载。AI 类数据源含可调整的低额度预警阈值。
+Peninsula 数据源目录。浏览并下载 `.pds.json`，在 Peninsula 的「数据源」页面导入。
+
+目前提供 AI 套餐额度、GitHub 开放 PR 数、开放 Issue 数和仓库 Star 数。
 
 ## 本地开发
 
@@ -9,25 +11,29 @@ npm ci
 npm run dev
 ```
 
-## 构建与部署
+运行检查和构建：
 
 ```sh
+npm run generate
+python3 scripts/check_catalog.py
 npm run build
 ```
 
-构建产物直接保存在根目录 `docs`。GitHub Pages 使用 **Deploy from a branch**、`main`、`/docs`。
+网站静态文件输出到 `docs/`，GitHub Pages 使用 `main` 分支下的 `/docs`。推送 `main` 后的 GitHub Actions 会自动重新构建网站。
 
-数据源定义由 `scripts/generate_catalog.py` 生成至 `public/pds`，更新后运行 `npm run build`。Peninsula 只支持一次请求提取一个数值，因此每个额度周期有独立文件。刷新间隔和提醒冷却在 Peninsula 导入后配置。
+## 数据源
 
-## 密钥约定
+- AI：OpenCode Go、DeepSeek、GLM、MiniMax 的额度或余额。
+- 开发：GitHub 开放 PR、开放 Issue 和 Star 数。可配置仓库所有者和仓库名，默认示例为 `kevinhuang001/peninsula`。
+- GitHub PR 与 Issue 提醒基于**当前开放数量**判断，默认数量大于 0 时提醒。刷新由 Peninsula 管理，不是 GitHub Webhook 或事件推送；通知还会遵守最短提醒间隔。
+- GitHub 数据源使用公开 API，无需 Token，只适用于公开仓库。匿名 API 有速率限制，建议不要把刷新间隔设得过短。
 
-PDS 里的密钥只是普通 `string` 参数，不声明“secret”类型。用户在参数中填写：
+数据源文件由 `scripts/generate_catalog.py` 生成到 `public/pds/`。刷新间隔和提醒冷却在 Peninsula 导入后配置，不写入定义文件。
 
-- 明文 Key：保存在 Peninsula 本机实例配置中；或
-- `$名称$`：引用 Peninsula 的「秘密」页中保存的同名条目，发送请求时解析。
+## 密钥
 
-因此定义文件里使用 `${input.api_key}`，不要使用 `${secret.api_key}`。
+API Key 使用普通 `string` 参数。可以填写明文，或填写 `$名称$` 引用 Peninsula「秘密」页面中保存的条目。定义文件使用 `${input.api_key}`，不支持 `${secret.api_key}`。
 
 ## 图标
 
-`scripts/logos` 中的品牌图标来自 [Simple Icons](https://simpleicons.org/)（CC0）、[LobeHub Icons](https://github.com/lobehub/lobe-icons)（MIT）和 [Lucide](https://lucide.dev/)（ISC）。生成器会把它们组合成带品牌色背景的 64×64 SVG。图标必须是路径/形状图形，不能使用 SVG `<text>`，因为 Peninsula 的渲染器不会把文字栅格化。
+`scripts/logos` 内使用 SVG 路径，不使用 `<text>`。图标参考 Simple Icons（CC0）、LobeHub Icons（MIT）和 Lucide（ISC）；GitHub 图标采用 GitHub 的矢量标记。

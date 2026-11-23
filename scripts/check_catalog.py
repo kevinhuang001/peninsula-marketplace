@@ -5,11 +5,12 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 files = sorted((root / 'public' / 'pds').glob('*.pds.json'))
-assert len(files) == 10, f'Expected 10 sources, got {len(files)}'
+assert len(files) == 9, f'Expected 9 sources, got {len(files)}'
 for file in files:
     data = json.loads(file.read_text())
     assert data['schema'] == 'peninsula.datasource/v1'
     assert file.name == data['id'] + '.pds.json'
+    assert ' · ' not in data['name'], f'{file.name}: names must not use middle dots'
     assert set(data) <= {'schema', 'id', 'name', 'description', 'icon', 'inputs', 'request', 'value', 'alert'}
     assert data['request']['method'] in {'GET', 'POST', 'PUT', 'PATCH'}
     assert data['request']['url'].startswith('https://')
@@ -35,4 +36,21 @@ for file in files:
         assert data['inputs']['api_key']['type'] == 'string'
         assert 'description' not in data['inputs']['api_key']
         assert 'description' not in data['inputs']['alert_threshold']
-print(f'Checked {len(files)} data sources, string-only API keys, and path-based icons')
+    if data['id'] in {'github-open-prs', 'github-open-issues'}:
+        assert data['request']['url'] == 'https://api.github.com/search/issues'
+        assert data['value']['path'] == '$.total_count'
+        assert data['alert']['operator'] == 'gt'
+        assert data['alert']['threshold'] == '${input.alert_threshold}'
+        assert data['inputs']['owner']['required'] and data['inputs']['repo']['required']
+        assert 'is:pr' in data['request']['query']['q'] if data['id'] == 'github-open-prs' else 'is:issue' in data['request']['query']['q']
+    if data['id'] == 'github-repository-stars':
+        assert data['value']['path'] == '$.stargazers_count'
+        assert 'alert' not in data
+
+assert {file.stem.removesuffix('.pds') for file in files} == {
+    'opencode-go-rolling-remaining', 'opencode-go-weekly-remaining',
+    'opencode-go-monthly-remaining', 'deepseek-cny-balance',
+    'glm-cn-coding-remaining', 'minimax-cn-current-remaining',
+    'github-open-prs', 'github-open-issues', 'github-repository-stars',
+}
+print(f'Checked {len(files)} data sources, GitHub counts, and image icons')

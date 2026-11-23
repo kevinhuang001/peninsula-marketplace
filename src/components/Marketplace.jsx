@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
 import { MantineProvider, Modal, TextInput, Select, Button, Badge } from '@mantine/core';
-import { ArrowDown, ArrowUpRight, BellRing, ChevronDown, CloudSun, Coins, Download, Github, Search, Sparkles, X } from 'lucide-react';
+import { ArrowUpRight, BellRing, ChevronDown, Code2, Download, Github, LayoutGrid, Search, Sparkles, X } from 'lucide-react';
 import { catalog, categories } from '../catalog.js';
 
 const base = import.meta.env.BASE_URL;
 const downloadUrl = (id) => `${base}pds/${id}.pds.json`;
-const categoryIcon = { '全部': Sparkles, 'AI': Sparkles, '天气': CloudSun, '市场': Coins };
+const categoryIcon = { '全部': LayoutGrid, 'AI': Sparkles, '开发': Code2 };
 
 function SourceCard({ item, onOpen }) {
   return <button className="source-card" onClick={() => onOpen(item)} aria-label={`查看 ${item.name} ${item.metric} 详情`}>
-    <div className="card-upper"><span className={`item-icon ${item.tone}`}>{item.icon}</span><Badge variant="light" radius="xl" className="source-badge">{item.tag}</Badge></div>
+    <div className="card-upper"><span className={`item-icon ${item.tone}`}>{item.icon === 'GH' ? <Github size={23}/> : item.icon}</span><Badge variant="light" radius="xl" className="source-badge">{item.tag}</Badge></div>
     <div className="card-main"><span className="provider-label">{item.provider}</span><h3>{item.name}<br/><span>{item.metric}</span></h3><p>{item.description}</p></div>
     <div className="card-lower"><span className="category-foot"><span className="small-dot" />{item.category}</span><span className="view-detail">查看详情 <ArrowUpRight size={16}/></span></div>
   </button>;
@@ -19,13 +19,13 @@ function SourceDetail({ item, onClose }) {
   return <Modal opened={!!item} onClose={onClose} centered size="lg" radius="lg" withCloseButton={false} overlayProps={{ backgroundOpacity: .62, blur: 6 }} classNames={{ content: 'detail-modal', body: 'detail-body' }}>
     {item && <>
       <button className="detail-close" onClick={onClose} aria-label="关闭详情"><X size={20}/></button>
-      <div className="detail-heading"><span className={`item-icon detail-icon ${item.tone}`}>{item.icon}</span><div><span className="eyebrow">{item.category} / {item.tag}</span><h2>{item.name}<span> · {item.metric}</span></h2></div></div>
+      <div className="detail-heading"><span className={`item-icon detail-icon ${item.tone}`}>{item.icon === 'GH' ? <Github size={27}/> : item.icon}</span><div><span className="eyebrow">{item.category} / {item.tag}</span><h2>{item.name}<span> {item.metric}</span></h2></div></div>
       <p className="detail-description">{item.description}</p>
       <div className="detail-facts"><div><small>数据提供方</small><strong>{item.provider}</strong></div><div><small>认证方式</small><strong>{item.auth}</strong></div><div><small>显示单位</small><strong>{item.unit}</strong></div></div>
-      {item.alert && <div className="alert-box"><BellRing size={20}/><div><strong>低额度预警已配置</strong><p>{item.alert}。导入后可修改阈值，并设置刷新间隔和提醒冷却。</p></div></div>}
+      {item.alert && <div className="alert-box"><BellRing size={20}/><div><strong>支持提醒</strong><p>{item.alert}。导入后可调整提醒阈值与最短提醒间隔。</p></div></div>}
       {item.note && <p className="compat-note">兼容提示：{item.note}</p>}
-      <div className="detail-instructions"><span className="eyebrow">如何使用</span><ol><li>下载 <code>.pds.json</code> 定义文件</li><li>在 Peninsula 的「数据源」中选择导入</li><li>填写{item.auth === '无需密钥' ? '参数' : '明文密钥或 $名称$，并设置提醒阈值'}，设置刷新间隔</li></ol></div>
-      <div className="detail-actions"><Button component="a" href={downloadUrl(item.id)} download={`${item.id}.pds.json`} size="md" leftSection={<Download size={17}/>} className="download-button">下载 pds.json</Button><a className="source-link" href={item.source} target="_blank" rel="noopener noreferrer">查看接口来源 <ArrowUpRight size={15}/></a></div>
+      <div className="detail-instructions"><span className="eyebrow">导入方法</span><ol><li>下载数据源文件</li><li>打开 Peninsula 的「数据源」，点击「导入」</li><li>{item.category === '开发' ? '填写仓库所有者和仓库名' : '填写所需参数'}，然后设置刷新间隔{item.alert ? '和提醒选项' : ''}</li></ol></div>
+      <div className="detail-actions"><Button component="a" href={downloadUrl(item.id)} download={`${item.id}.pds.json`} size="md" leftSection={<Download size={17}/>} className="download-button">下载文件</Button><a className="source-link" href={item.source} target="_blank" rel="noopener noreferrer">API 文档 <ArrowUpRight size={15}/></a></div>
     </>}
   </Modal>;
 }
@@ -51,14 +51,13 @@ function App() {
   }, [category, search, sort]);
 
   return <div className="app-shell">
-    <aside className="sidebar"><a href="#top" className="brand" aria-label="Peninsula Marketplace 首页"><span className="brand-mark"><span/></span><span className="brand-name">peninsula<small>marketplace</small></span></a><div className="side-label">探索</div><CategoryNav selected={category} onSelect={setCategory}/><div className="sidebar-foot"><span className="foot-mark">◌</span><div><strong>为 Peninsula 而造</strong><span>一个文件，即刻接入数据。</span></div></div></aside>
-    <main className="main" id="top"><header className="topbar"><span className="topbar-eyebrow"><span className="online-dot"/> PENINSULA DATA SOURCE LIBRARY</span><a href="https://github.com/kevinhuang001/peninsula-marketplace" target="_blank" rel="noopener noreferrer"><Github size={17}/> GitHub <ArrowUpRight size={15}/></a></header>
-      <section className="hero"><div className="hero-copy"><span className="hero-kicker"><Sparkles size={16}/> 扩展你的桌面视野</span><h1>你关心的数据，<br/><em>就在眼前。</em></h1><p>发现专为 Peninsula 设计的数据源。选一个喜欢的，下载并导入，让重要数字在桌面上持续可见。</p><a href="#collection" className="hero-button">探索数据源 <ArrowDown size={18}/></a></div><div className="hero-visual" aria-hidden="true"><div className="visual-orbit orbit-a"/><div className="visual-orbit orbit-b"/><div className="hero-island"><span className="island-face"><i/><i/></span><span className="island-meter"><Sparkles size={14}/> 额度剩余 <strong>82%</strong></span></div><div className="floating-label float-top">↗ &nbsp; 实时数据</div><div className="floating-label float-bottom">◌ &nbsp; 轻松导入</div><span className="decor-star star-a">✧</span><span className="decor-star star-b">✦</span></div></section>
-      <section className="collection" id="collection"><div className="section-heading"><div><span className="eyebrow">THE COLLECTION</span><h2>数据源精选</h2><p>从 AI 额度到天气行情，为你的桌面找到刚好的信息。</p></div><span className="result-count">{results.length} 个数据源</span></div><CategoryNav className="mobile-categories" selected={category} onSelect={setCategory}/><div className="toolbar"><TextInput aria-label="搜索数据源" placeholder="搜索数据源、服务或关键词..." leftSection={<Search size={18}/>} value={search} onChange={e => setSearch(e.currentTarget.value)} classNames={{root:'search-input',input:'search-field'}}/><Select aria-label="排序方式" data={[{ value:'featured', label:'精选推荐' }, { value:'name', label:'按名称' }]} value={sort} onChange={value => setSort(value || 'featured')} rightSection={<ChevronDown size={16}/>} classNames={{root:'sort-select',input:'sort-field'}}/></div>
-        {results.length ? <div className="card-grid">{results.map(item => <SourceCard key={item.id} item={item} onOpen={setSelected}/>)}</div> : <div className="empty-state"><Search size={32}/><h3>没有找到匹配的数据源</h3><p>试试其他关键词，或切换分类。</p><Button variant="light" onClick={() => { setSearch(''); setCategory('全部'); }}>清除筛选</Button></div>}
+    <aside className="sidebar"><a href="#top" className="brand" aria-label="Peninsula Marketplace 首页"><span className="brand-mark"><span/></span><span className="brand-name">Peninsula<small>Marketplace</small></span></a><div className="side-label">分类</div><CategoryNav selected={category} onSelect={setCategory}/><div className="sidebar-foot">选择数据源，下载后在 Peninsula 中导入。</div></aside>
+    <main className="main" id="top"><header className="topbar"><span className="topbar-eyebrow">数据源目录</span><a href="https://github.com/kevinhuang001/peninsula-marketplace" target="_blank" rel="noopener noreferrer"><Github size={17}/> GitHub <ArrowUpRight size={15}/></a></header>
+      <section className="collection" id="collection"><div className="section-heading"><div><h1>数据源</h1><p>下载并导入 Peninsula，可显示数值或设置提醒。</p></div><span className="result-count">{results.length} 个数据源</span></div><CategoryNav className="mobile-categories" selected={category} onSelect={setCategory}/><div className="toolbar"><TextInput aria-label="搜索数据源" placeholder="搜索数据源" leftSection={<Search size={18}/>} value={search} onChange={e => setSearch(e.currentTarget.value)} classNames={{root:'search-input',input:'search-field'}}/><Select aria-label="排序方式" data={[{ value:'featured', label:'默认排序' }, { value:'name', label:'按名称排序' }]} value={sort} onChange={value => setSort(value || 'featured')} rightSection={<ChevronDown size={16}/>} classNames={{root:'sort-select',input:'sort-field'}}/></div>
+        {results.length ? <div className="card-grid">{results.map(item => <SourceCard key={item.id} item={item} onOpen={setSelected}/>)}</div> : <div className="empty-state"><Search size={32}/><h3>没有搜索结果</h3><p>可以更换关键词或清除筛选。</p><Button variant="light" onClick={() => { setSearch(''); setCategory('全部'); }}>清除筛选</Button></div>}
       </section>
-      <section className="how-section"><div><span className="eyebrow">SIMPLE BY DESIGN</span><h2>从发现到展示，<br/>只需三步。</h2></div><div className="steps"><div><span>01</span><strong>挑选数据源</strong><p>按分类浏览，找到想持续关注的数字。</p></div><div><span>02</span><strong>下载定义文件</strong><p>每个数据源都有可直接导入的 .pds.json。</p></div><div><span>03</span><strong>导入 Peninsula</strong><p>填写参数，设置刷新与提醒。</p></div></div></section>
-      <footer><span>© 2026 Peninsula Marketplace</span><span>为你的桌面，留住重要的数。</span></footer>
+      <section className="how-section"><h2>使用方法</h2><div className="steps"><div><span>1</span><strong>下载</strong><p>选择数据源，下载 .pds.json 文件。</p></div><div><span>2</span><strong>导入</strong><p>在 Peninsula 的「数据源」中导入文件。</p></div><div><span>3</span><strong>设置</strong><p>填写参数，并设置刷新和提醒选项。</p></div></div></section>
+      <footer><span>© 2026 Peninsula Marketplace</span><a href="https://github.com/kevinhuang001/peninsula-marketplace" target="_blank" rel="noopener noreferrer">源代码和反馈</a></footer>
     </main><SourceDetail item={selected} onClose={() => setSelected(null)}/>
   </div>;
 }
