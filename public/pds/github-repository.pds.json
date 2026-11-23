@@ -66,7 +66,7 @@
     "pull_requests": {
       "name": "开放 PR",
       "capsule_text": "PR: ${value}",
-    "capsule_layout": "two_line",
+      "capsule_layout": "two_line",
       "request": "pull_requests",
       "value": {
         "path": "$.total_count",
@@ -86,7 +86,7 @@
     "issues": {
       "name": "开放 Issue",
       "capsule_text": "Issue: ${value}",
-    "capsule_layout": "two_line",
+      "capsule_layout": "two_line",
       "request": "issues",
       "value": {
         "path": "$.total_count",
@@ -106,7 +106,7 @@
     "stars": {
       "name": "Star 数",
       "capsule_text": "Star: ${value}",
-    "capsule_layout": "two_line",
+      "capsule_layout": "two_line",
       "request": "repository",
       "value": {
         "path": "$.stargazers_count",
