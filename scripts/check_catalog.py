@@ -17,12 +17,15 @@ for file in files:
     assert file.name == f"{data['id']}.pds.json"
     assert data["schema"] in {"peninsula.datasource/v1", "peninsula.datasource/v2"}
     assert " · " not in data["name"]
-    assert data["request"]["method"] in {"GET", "POST", "PUT", "PATCH"}
-    assert data["request"]["url"].startswith("https://")
-    assert "interval" not in data["request"]
+    requests = [data["request"]] if "request" in data else list(data["requests"].values())
+    assert requests
+    for request in requests:
+        assert request["method"] in {"GET", "POST", "PUT", "PATCH"}
+        assert request["url"].startswith("https://")
+        assert "interval" not in request
     assert all(entry["type"] != "secret" for entry in data["inputs"].values())
 
-    request_text = json.dumps(data["request"], ensure_ascii=False)
+    request_text = json.dumps(requests, ensure_ascii=False)
     used = set(re.findall(r"\$\{input\.([A-Za-z0-9_]+)\}", request_text))
     assert used <= set(data["inputs"]), f"{file.name}: undeclared input"
     assert "${secret." not in request_text
@@ -40,13 +43,23 @@ for file in files:
         assert data["id"] == "github-repository"
         assert "value" not in data and "alert" not in data
         assert data["name_template"] == "${input.repo}"
-        assert data["request"]["url"] == "https://api.github.com/graphql"
-        assert data["request"]["method"] == "POST"
-        assert data["request"]["headers"]["Authorization"] == "Bearer ${input.api_key}"
+        assert "request" not in data
+        assert set(data["requests"]) == {"pull_requests", "issues", "repository"}
+        for request in data["requests"].values():
+            assert request["method"] == "GET"
+            assert request["url"].startswith("https://api.github.com/")
+        assert data["requests"]["pull_requests"]["url"] == "https://api.github.com/search/issues"
+        assert data["requests"]["issues"]["url"] == "https://api.github.com/search/issues"
+        assert data["requests"]["repository"]["url"] == "https://api.github.com/repos/${input.owner}/${input.repo}"
+        assert "is:pr is:open" in data["requests"]["pull_requests"]["query"]["q"]
+        assert "is:issue is:open" in data["requests"]["issues"]["query"]["q"]
         assert set(data["values"]) == {"pull_requests", "issues", "stars"}
-        assert data["values"]["pull_requests"]["value"]["path"] == "$.data.repository.pullRequests.totalCount"
-        assert data["values"]["issues"]["value"]["path"] == "$.data.repository.issues.totalCount"
-        assert data["values"]["stars"]["value"]["path"] == "$.data.repository.stargazerCount"
+        assert data["values"]["pull_requests"]["request"] == "pull_requests"
+        assert data["values"]["issues"]["request"] == "issues"
+        assert data["values"]["stars"]["request"] == "repository"
+        assert data["values"]["pull_requests"]["value"]["path"] == "$.total_count"
+        assert data["values"]["issues"]["value"]["path"] == "$.total_count"
+        assert data["values"]["stars"]["value"]["path"] == "$.stargazers_count"
         for metric in ("pull_requests", "issues"):
             alert = data["values"][metric]["alert"]
             assert alert["mode"] == "change"
