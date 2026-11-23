@@ -24,7 +24,7 @@ function SourceDetail({ item, onClose }) {
       <div className="detail-facts"><div><small>数据提供方</small><strong>{item.provider}</strong></div><div><small>认证方式</small><strong>{item.auth}</strong></div><div><small>显示单位</small><strong>{item.unit}</strong></div></div>
       {item.alert && <div className="alert-box"><BellRing size={20}/><div><strong>支持提醒</strong><p>{item.alert}。导入后可分别开关各项提醒，并设置最短提醒间隔。</p></div></div>}
       {item.note && <p className="compat-note">兼容提示：{item.note}</p>}
-      <div className="detail-instructions"><span className="eyebrow">导入方法</span><ol><li>下载数据源文件</li><li>打开 Peninsula 的「数据源」，点击「导入」</li><li>{item.category === '开发' ? '填写仓库所有者、仓库名和 GitHub Token' : '填写所需参数'}，然后设置刷新间隔{item.alert ? '和提醒选项' : ''}</li></ol></div>
+      <div className="detail-instructions"><span className="eyebrow">导入方法</span><ol><li>下载数据源文件</li><li>打开 Peninsula 的「数据源」，点击「导入」</li><li>{item.category === '开发' ? '填写仓库所有者和仓库名' : '填写所需参数'}，然后设置刷新间隔{item.alert ? '和提醒选项' : ''}</li></ol></div>
       <div className="detail-actions"><Button component="a" href={downloadUrl(item.id)} download={`${item.id}.pds.json`} size="md" leftSection={<Download size={17}/>} className="download-button">下载文件</Button><a className="source-link" href={item.source} target="_blank" rel="noopener noreferrer">API 文档 <ArrowUpRight size={15}/></a></div>
     </>}
   </Modal>;
