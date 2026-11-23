@@ -79,7 +79,8 @@
         "threshold": 0,
         "title": "${input.repo} PR 增加",
         "message": "开放 PR 净增 ${delta} 个，目前 ${value}。"
-      }
+      },
+      "capsule_text": "PR: ${value}"
     },
     "issues": {
       "name": "开放 Issue",
@@ -97,7 +98,8 @@
         "threshold": 0,
         "title": "${input.repo} Issue 增加",
         "message": "开放 Issue 净增 ${delta} 个，目前 ${value}。"
-      }
+      },
+      "capsule_text": "Issue: ${value}"
     },
     "stars": {
       "name": "Star 数",
@@ -108,7 +110,8 @@
         "decimals": 0,
         "separator": true,
         "suffix": " 个"
-      }
+      },
+      "capsule_text": "Star: ${value}"
     }
   }
 }
