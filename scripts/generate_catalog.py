@@ -54,9 +54,11 @@ def source(id, name, description, logo, color, method, url, path, *, headers=Non
                   "offset": offset, "decimals": decimals, "separator": decimals == 0,
                   "prefix": "", "suffix": suffix}
     }
-    if alert:
+    if isinstance(alert, dict):
+        d["alert"] = alert
+    elif alert:
         d["alert"] = {"operator": "lt", "threshold": "${input.alert_threshold}",
-                      "title": f"{name}偏低", "message": "当前剩余 ${value}，低于设定阈值，请检查额度。"}
+                      "title": f"{name}偏低", "message": "剩余 ${value}，已低于提醒阈值。"}
     return d
 
 
@@ -65,8 +67,8 @@ for period, title, color in [
     ("rolling", "滚动周期", "#0B766F"), ("weekly", "每周", "#216A70"), ("monthly", "每月", "#365B75")
 ]:
     ai.append(source(
-        f"opencode-go-{period}-remaining", f"OpenCode Go · {title}剩余",
-        "通过官方套餐 Usage API 读取已使用百分比，并换算为剩余百分比。需要 OpenCode Go 套餐 API Key；未知或无限额度不会伪装成数值。",
+        f"opencode-go-{period}-remaining", f"OpenCode Go {title}剩余",
+        "显示 OpenCode Go 套餐的剩余百分比，需填写套餐 API Key。",
         "opencode", color, "GET", "https://opencode.ai/zen/go/v1/usage",
         f"$.usage.{period}.percent", headers={"Authorization": "Bearer ${input.api_key}", "Accept": "application/json"},
         inputs={"api_key": api_key("OpenCode Go 套餐 API Key"),
@@ -74,8 +76,8 @@ for period, title, color in [
         multiply=-1, offset=100, suffix="%", alert=True))
 
 ai.append(source(
-    "deepseek-cny-balance", "DeepSeek · 人民币余额",
-    "通过官方余额 API 读取 CNY 账户总余额。仅适用于返回人民币余额的账户；需要 DeepSeek API Key。",
+    "deepseek-cny-balance", "DeepSeek 人民币余额",
+    "显示 DeepSeek 账户的人民币余额，需填写 API Key。",
     "deepseek", "#3469B2", "GET", "https://api.deepseek.com/user/balance",
     "$.balance_infos[?(@.currency=='CNY')].total_balance",
     headers={"Authorization": "Bearer ${input.api_key}", "Accept": "application/json"},
@@ -84,8 +86,8 @@ ai.append(source(
     decimals=2, suffix=" 元", alert=True))
 
 ai.append(source(
-    "glm-cn-coding-remaining", "GLM · Coding Plan 剩余",
-    "中国区 Coding Plan 编程额度的剩余百分比。读取第一个 TOKENS_LIMIT 周期；需使用中国区套餐 Key。",
+    "glm-cn-coding-remaining", "GLM Coding Plan 剩余",
+    "显示中国区 Coding Plan 剩余百分比，需填写中国区套餐 Key。",
     "zhipu", "#6153AF", "GET", "https://open.bigmodel.cn/api/monitor/usage/quota/limit",
     "$.data.limits[?(@.type=='TOKENS_LIMIT')].percentage",
     headers={"Authorization": "${input.api_key}", "Accept": "application/json"},
@@ -94,8 +96,8 @@ ai.append(source(
     multiply=-1, offset=100, suffix="%", alert=True))
 
 ai.append(source(
-    "minimax-cn-current-remaining", "MiniMax · 当前周期剩余",
-    "中国区 Coding Plan 的 general 额度池当前周期剩余百分比。仅支持返回显式 remaining_percent 的套餐响应。",
+    "minimax-cn-current-remaining", "MiniMax 当前周期剩余",
+    "显示中国区 Coding Plan 当前周期剩余百分比，需填写中国区套餐 Key。",
     "minimax", "#D86B48", "GET", "https://api.minimax.cn/v1/token_plan/remains",
     "$.model_remains[?(@.model_name=='general')].current_interval_remaining_percent",
     headers={"Authorization": "Bearer ${input.api_key}", "Accept": "application/json"},
@@ -103,14 +105,55 @@ ai.append(source(
             "alert_threshold": threshold("低额度提醒阈值（%）", 15)},
     suffix="%", alert=True))
 
-others = [
-    source("open-meteo-shanghai-temperature", "上海实时气温", "Open-Meteo 当前 2 米气温。经纬度可在导入后调整，默认上海。", "open-meteo", "#D88B42", "GET", "https://api.open-meteo.com/v1/forecast", "$.current.temperature_2m", query={"latitude": "${input.latitude}", "longitude": "${input.longitude}", "current": "temperature_2m", "timezone": "auto"}, inputs={"latitude": {"type": "number", "label": "纬度", "default": 31.2304, "required": True, "min": -90, "max": 90}, "longitude": {"type": "number", "label": "经度", "default": 121.4737, "required": True, "min": -180, "max": 180}}, decimals=1, suffix=" °C"),
-    source("open-meteo-shanghai-humidity", "上海实时湿度", "Open-Meteo 当前相对湿度。经纬度可在导入后调整，默认上海。", "open-meteo", "#467B9F", "GET", "https://api.open-meteo.com/v1/forecast", "$.current.relative_humidity_2m", query={"latitude": "${input.latitude}", "longitude": "${input.longitude}", "current": "relative_humidity_2m", "timezone": "auto"}, inputs={"latitude": {"type": "number", "label": "纬度", "default": 31.2304, "required": True, "min": -90, "max": 90}, "longitude": {"type": "number", "label": "经度", "default": 121.4737, "required": True, "min": -180, "max": 180}}, suffix="%"),
-    source("coingecko-bitcoin-usd", "Bitcoin · 美元报价", "CoinGecko 公共 Simple Price API 返回的比特币美元现价。公共接口可能限流。", "bitcoin", "#BD8B39", "GET", "https://api.coingecko.com/api/v3/simple/price", "$.bitcoin.usd", query={"ids": "bitcoin", "vs_currencies": "usd"}, decimals=2, suffix=" USD"),
-    source("frankfurter-usd-cny", "美元兑人民币汇率", "Frankfurter 最新 USD/CNY 参考汇率，数据按其公布频率更新。", "frankfurter", "#3C8A72", "GET", "https://api.frankfurter.dev/v1/latest", "$.rates.CNY", query={"base": "USD", "symbols": "CNY"}, decimals=4, suffix=" CNY")
+def repo_inputs(with_alert=False):
+    inputs = {
+        "owner": {"type": "string", "label": "仓库所有者", "default": "kevinhuang001", "required": True},
+        "repo": {"type": "string", "label": "仓库名", "default": "peninsula", "required": True}
+    }
+    if with_alert:
+        inputs["alert_threshold"] = threshold("提醒阈值（个）", 0)
+    return inputs
+
+
+github_headers = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "Peninsula-Marketplace",
+    "X-GitHub-Api-Version": "2022-11-28"
+}
+
+
+def github_count(id, name, item_type):
+    label = "PR" if item_type == "pr" else "Issue"
+    return source(
+        id, name, f"统计公开仓库当前未关闭的 {label} 数量；超过阈值时提醒。",
+        "github", "#374654", "GET", "https://api.github.com/search/issues",
+        "$.total_count", headers=github_headers,
+        query={"q": f"repo:${{input.owner}}/${{input.repo}} is:{item_type} is:open", "per_page": "1"},
+        inputs=repo_inputs(with_alert=True), suffix=" 个",
+        alert={"operator": "gt", "threshold": "${input.alert_threshold}",
+               "title": f"GitHub 有未关闭的 {label}",
+               "message": f"${{input.owner}}/${{input.repo}} 当前有 ${{value}} 个开放的 {label}。"}
+    )
+
+
+development = [
+    github_count("github-open-prs", "GitHub 开放 PR", "pr"),
+    github_count("github-open-issues", "GitHub 开放 Issue", "issue"),
+    source("github-repository-stars", "GitHub 仓库 Star 数",
+           "显示公开仓库的 Star 总数。", "github", "#374654", "GET",
+           "https://api.github.com/repos/${input.owner}/${input.repo}",
+           "$.stargazers_count", headers=github_headers,
+           inputs=repo_inputs(), suffix=" 个")
 ]
 
-for d in ai + others:
+# The generator owns these files: remove obsolete weather/market entries.
+for obsolete in (
+    "open-meteo-shanghai-temperature", "open-meteo-shanghai-humidity",
+    "coingecko-bitcoin-usd", "frankfurter-usd-cny"
+):
+    (OUT / f"{obsolete}.pds.json").unlink(missing_ok=True)
+
+for d in ai + development:
     (OUT / f"{d['id']}.pds.json").write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n")
 
-print(f"Generated {len(ai) + len(others)} Peninsula data sources")
+print(f"Generated {len(ai) + len(development)} Peninsula data sources")
