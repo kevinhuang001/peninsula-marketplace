@@ -110,7 +110,7 @@ def github_source():
         "schema": "peninsula.datasource/v2",
         "id": "github-repository",
         "name": "GitHub 仓库",
-        "name_template": "${input.repo}",
+        "name_template": "${input.owner}/${input.repo}",
         "description": "一个数据源分别读取开放 PR、开放 Issue 和 Star 数，PR/Issue 净增加时可提醒。",
         "icon": icon("github", "#374654"),
         "inputs": {

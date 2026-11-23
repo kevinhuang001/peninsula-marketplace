@@ -42,7 +42,7 @@ for file in files:
     else:
         assert data["id"] == "github-repository"
         assert "value" not in data and "alert" not in data
-        assert data["name_template"] == "${input.repo}"
+        assert data["name_template"] == "${input.owner}/${input.repo}"
         assert "request" not in data
         assert set(data["requests"]) == {"pull_requests", "issues", "repository"}
         for request in data["requests"].values():
