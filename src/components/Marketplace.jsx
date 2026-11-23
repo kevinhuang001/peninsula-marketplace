@@ -9,7 +9,7 @@ const categoryIcon = { '全部': LayoutGrid, 'AI': Sparkles, '开发': Code2 };
 
 function SourceCard({ item, onOpen }) {
   return <button className="source-card" onClick={() => onOpen(item)} aria-label={`查看 ${item.name} ${item.metric} 详情`}>
-    <div className="card-upper"><span className={`item-icon ${item.tone}`}>{item.icon === 'GH' ? <Github size={23}/> : item.icon}</span><Badge variant="light" radius="xl" className="source-badge">{item.tag}</Badge></div>
+    <div className="card-upper"><span className={`item-icon ${item.tone}`}>{item.logo ? <img src={`${base}logos/${item.logo}.svg`} alt="" /> : item.icon}</span><Badge variant="light" radius="xl" className="source-badge">{item.tag}</Badge></div>
     <div className="card-main"><span className="provider-label">{item.provider}</span><h3>{item.name}<br/><span>{item.metric}</span></h3><p>{item.description}</p></div>
     <div className="card-lower"><span className="category-foot"><span className="small-dot" />{item.category}</span><span className="view-detail">查看详情 <ArrowUpRight size={16}/></span></div>
   </button>;
@@ -19,12 +19,12 @@ function SourceDetail({ item, onClose }) {
   return <Modal opened={!!item} onClose={onClose} centered size="lg" radius="lg" withCloseButton={false} overlayProps={{ backgroundOpacity: .62, blur: 6 }} classNames={{ content: 'detail-modal', body: 'detail-body' }}>
     {item && <>
       <button className="detail-close" onClick={onClose} aria-label="关闭详情"><X size={20}/></button>
-      <div className="detail-heading"><span className={`item-icon detail-icon ${item.tone}`}>{item.icon === 'GH' ? <Github size={27}/> : item.icon}</span><div><span className="eyebrow">{item.category} / {item.tag}</span><h2>{item.name}<span> {item.metric}</span></h2></div></div>
+      <div className="detail-heading"><span className={`item-icon detail-icon ${item.tone}`}>{item.logo ? <img src={`${base}logos/${item.logo}.svg`} alt="" /> : item.icon}</span><div><span className="eyebrow">{item.category} / {item.tag}</span><h2>{item.name}<span> {item.metric}</span></h2></div></div>
       <p className="detail-description">{item.description}</p>
       <div className="detail-facts"><div><small>数据提供方</small><strong>{item.provider}</strong></div><div><small>认证方式</small><strong>{item.auth}</strong></div><div><small>显示单位</small><strong>{item.unit}</strong></div></div>
-      {item.alert && <div className="alert-box"><BellRing size={20}/><div><strong>支持提醒</strong><p>{item.alert}。导入后可调整提醒阈值与最短提醒间隔。</p></div></div>}
+      {item.alert && <div className="alert-box"><BellRing size={20}/><div><strong>支持提醒</strong><p>{item.alert}。导入后可分别开关各项提醒，并设置最短提醒间隔。</p></div></div>}
       {item.note && <p className="compat-note">兼容提示：{item.note}</p>}
-      <div className="detail-instructions"><span className="eyebrow">导入方法</span><ol><li>下载数据源文件</li><li>打开 Peninsula 的「数据源」，点击「导入」</li><li>{item.category === '开发' ? '填写仓库所有者和仓库名' : '填写所需参数'}，然后设置刷新间隔{item.alert ? '和提醒选项' : ''}</li></ol></div>
+      <div className="detail-instructions"><span className="eyebrow">导入方法</span><ol><li>下载数据源文件</li><li>打开 Peninsula 的「数据源」，点击「导入」</li><li>{item.category === '开发' ? '填写仓库所有者、仓库名和 GitHub Token' : '填写所需参数'}，然后设置刷新间隔{item.alert ? '和提醒选项' : ''}</li></ol></div>
       <div className="detail-actions"><Button component="a" href={downloadUrl(item.id)} download={`${item.id}.pds.json`} size="md" leftSection={<Download size={17}/>} className="download-button">下载文件</Button><a className="source-link" href={item.source} target="_blank" rel="noopener noreferrer">API 文档 <ArrowUpRight size={15}/></a></div>
     </>}
   </Modal>;
