@@ -65,6 +65,7 @@
   "values": {
     "pull_requests": {
       "name": "开放 PR",
+      "capsule_text": "PR: ${value}",
       "request": "pull_requests",
       "value": {
         "path": "$.total_count",
@@ -83,6 +84,7 @@
     },
     "issues": {
       "name": "开放 Issue",
+      "capsule_text": "Issue: ${value}",
       "request": "issues",
       "value": {
         "path": "$.total_count",
@@ -101,6 +103,7 @@
     },
     "stars": {
       "name": "Star 数",
+      "capsule_text": "Star: ${value}",
       "request": "repository",
       "value": {
         "path": "$.stargazers_count",

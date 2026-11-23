@@ -24,6 +24,7 @@ npm run build
 - **一个数据源、三个数值**：开放 PR、开放 Issue、Star 总数，分别从三个公开 REST 接口读取。
 - 输入 GitHub 仓库所有者和仓库名。导入后显示名称可用仓库名 `${input.repo}`，修改参数后同步变更。
 - 每个指标分别控制胶囊。PR 和 Issue 还可分别开关通知，并设置最短提醒间隔。
+- 胶囊文字由 `capsule_text` 模板控制，例如 `"Star: ${value}"` 显示 `Star: 1 个`；使用新版本 Peninsula 才能解析该字段。
 - PR/Issue 默认仅在开放数量**净增加**时提醒。首次成功刷新仅建立基准值，不产生变化提醒。两次刷新之间创建又关闭的项目无法通过净数量识别；不是 GitHub Webhook。
 - 使用 GitHub 公开 REST API，无需 Token，仅支持公开仓库。匿名访问有速率限制，建议采用较长的刷新间隔。
 - 多指标文件使用 `peninsula.datasource/v2`。请使用包含多指标功能的新版 Peninsula。
