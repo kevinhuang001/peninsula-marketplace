@@ -10,8 +10,6 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # Logos are monochrome path/shape SVGs with a 24x24 viewBox. Peninsula renders them with
 # resvg, which does not rasterize `<text>`, so every icon must be drawn with paths/shapes.
-STROKE_LOGOS = {"open-meteo", "frankfurter"}
-
 
 def _logo_markup(name):
     text = (LOGOS / f"{name}.svg").read_text()
@@ -21,11 +19,7 @@ def _logo_markup(name):
 
 
 def icon(logo, bg, fg="#ffffff"):
-    attributes = (
-        f'fill="none" stroke="{fg}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
-        if logo in STROKE_LOGOS
-        else f'fill="{fg}" fill-rule="evenodd"'
-    )
+    attributes = f'fill="{fg}" fill-rule="evenodd"'
     svg = (
         '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">'
         f'<rect width="64" height="64" rx="19" fill="{bg}"/>'
