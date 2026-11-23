@@ -99,53 +99,100 @@ ai.append(source(
             "alert_threshold": threshold("低额度提醒阈值（%）", 15)},
     suffix="%", alert=True))
 
-def repo_inputs(with_alert=False):
-    inputs = {
-        "owner": {"type": "string", "label": "仓库所有者", "default": "kevinhuang001", "required": True},
-        "repo": {"type": "string", "label": "仓库名", "default": "peninsula", "required": True}
+def github_source():
+    # One imported source can read several independent public REST URLs.
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "Peninsula-Marketplace",
+        "X-GitHub-Api-Version": "2022-11-28",
     }
-    if with_alert:
-        inputs["alert_threshold"] = threshold("提醒阈值（个）", 0)
-    return inputs
+    return {
+        "schema": "peninsula.datasource/v2",
+        "id": "github-repository",
+        "name": "GitHub 仓库",
+        "name_template": "${input.repo}",
+        "description": "一个数据源分别读取开放 PR、开放 Issue 和 Star 数，PR/Issue 净增加时可提醒。",
+        "icon": icon("github", "#374654"),
+        "inputs": {
+            "owner": {"type": "string", "label": "仓库所有者",
+                      "default": "kevinhuang001", "required": True},
+            "repo": {"type": "string", "label": "仓库名",
+                     "default": "peninsula", "required": True},
+        },
+        "requests": {
+            "pull_requests": {
+                "method": "GET",
+                "url": "https://api.github.com/search/issues",
+                "headers": headers,
+                "query": {
+                    "q": "repo:${input.owner}/${input.repo} is:pr is:open",
+                    "per_page": "1",
+                },
+                "timeout_ms": 10000,
+            },
+            "issues": {
+                "method": "GET",
+                "url": "https://api.github.com/search/issues",
+                "headers": headers,
+                "query": {
+                    "q": "repo:${input.owner}/${input.repo} is:issue is:open",
+                    "per_page": "1",
+                },
+                "timeout_ms": 10000,
+            },
+            "repository": {
+                "method": "GET",
+                "url": "https://api.github.com/repos/${input.owner}/${input.repo}",
+                "headers": headers,
+                "timeout_ms": 10000,
+            },
+        },
+        "values": {
+            "pull_requests": {
+                "name": "开放 PR",
+                "request": "pull_requests",
+                "value": {"path": "$.total_count", "type": "number",
+                          "decimals": 0, "separator": True, "suffix": " 个"},
+                "alert": {"mode": "change", "operator": "gt", "threshold": 0,
+                          "title": "${input.repo} PR 增加",
+                          "message": "开放 PR 净增 ${delta} 个，目前 ${value}。"},
+            },
+            "issues": {
+                "name": "开放 Issue",
+                "request": "issues",
+                "value": {"path": "$.total_count", "type": "number",
+                          "decimals": 0, "separator": True, "suffix": " 个"},
+                "alert": {"mode": "change", "operator": "gt", "threshold": 0,
+                          "title": "${input.repo} Issue 增加",
+                          "message": "开放 Issue 净增 ${delta} 个，目前 ${value}。"},
+            },
+            "stars": {
+                "name": "Star 数",
+                "request": "repository",
+                "value": {"path": "$.stargazers_count", "type": "number",
+                          "decimals": 0, "separator": True, "suffix": " 个"},
+            },
+        },
+    }
 
 
-github_headers = {
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "Peninsula-Marketplace",
-    "X-GitHub-Api-Version": "2022-11-28"
-}
+development = [github_source()]
 
-
-def github_count(id, name, item_type):
-    label = "PR" if item_type == "pr" else "Issue"
-    return source(
-        id, name, f"统计公开仓库当前未关闭的 {label} 数量；超过阈值时提醒。",
-        "github", "#374654", "GET", "https://api.github.com/search/issues",
-        "$.total_count", headers=github_headers,
-        query={"q": f"repo:${{input.owner}}/${{input.repo}} is:{item_type} is:open", "per_page": "1"},
-        inputs=repo_inputs(with_alert=True), suffix=" 个",
-        alert={"operator": "gt", "threshold": "${input.alert_threshold}",
-               "title": f"GitHub 有未关闭的 {label}",
-               "message": f"${{input.owner}}/${{input.repo}} 当前有 ${{value}} 个开放的 {label}。"}
-    )
-
-
-development = [
-    github_count("github-open-prs", "GitHub 开放 PR", "pr"),
-    github_count("github-open-issues", "GitHub 开放 Issue", "issue"),
-    source("github-repository-stars", "GitHub 仓库 Star 数",
-           "显示公开仓库的 Star 总数。", "github", "#374654", "GET",
-           "https://api.github.com/repos/${input.owner}/${input.repo}",
-           "$.stargazers_count", headers=github_headers,
-           inputs=repo_inputs(), suffix=" 个")
-]
-
-# The generator owns these files: remove obsolete weather/market entries.
+# Remove files no longer listed in the catalog, including the three former GitHub entries.
 for obsolete in (
     "open-meteo-shanghai-temperature", "open-meteo-shanghai-humidity",
-    "coingecko-bitcoin-usd", "frankfurter-usd-cny"
+    "coingecko-bitcoin-usd", "frankfurter-usd-cny",
+    "github-open-prs", "github-open-issues", "github-repository-stars"
 ):
     (OUT / f"{obsolete}.pds.json").unlink(missing_ok=True)
+
+# Official brand marks used by the website, rather than letter avatars.
+WEB_LOGOS = ROOT / "public" / "logos"
+WEB_LOGOS.mkdir(parents=True, exist_ok=True)
+for brand in ("opencode", "deepseek", "zhipu", "minimax", "github"):
+    logo_svg = (LOGOS / f"{brand}.svg").read_text()
+    (WEB_LOGOS / f"{brand}.svg").write_text(logo_svg.replace('fill="currentColor"', 'fill="#ffffff"'))
+
 
 for d in ai + development:
     (OUT / f"{d['id']}.pds.json").write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n")

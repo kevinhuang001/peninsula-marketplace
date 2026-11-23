@@ -4,53 +4,70 @@ import re
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-files = sorted((root / 'public' / 'pds').glob('*.pds.json'))
-assert len(files) == 9, f'Expected 9 sources, got {len(files)}'
+files = sorted((root / "public" / "pds").glob("*.pds.json"))
+expected = {
+    "opencode-go-rolling-remaining", "opencode-go-weekly-remaining",
+    "opencode-go-monthly-remaining", "deepseek-cny-balance",
+    "glm-cn-coding-remaining", "minimax-cn-current-remaining",
+    "github-repository",
+}
+assert {file.name.removesuffix(".pds.json") for file in files} == expected
 for file in files:
     data = json.loads(file.read_text())
-    assert data['schema'] == 'peninsula.datasource/v1'
-    assert file.name == data['id'] + '.pds.json'
-    assert ' · ' not in data['name'], f'{file.name}: names must not use middle dots'
-    assert set(data) <= {'schema', 'id', 'name', 'description', 'icon', 'inputs', 'request', 'value', 'alert'}
-    assert data['request']['method'] in {'GET', 'POST', 'PUT', 'PATCH'}
-    assert data['request']['url'].startswith('https://')
-    assert data['value']['type'] == 'number' and data['value']['path'].startswith('$')
-    assert 'interval' not in data['request']
-    assert all(definition['type'] != 'secret' for definition in data['inputs'].values())
+    assert file.name == f"{data['id']}.pds.json"
+    assert data["schema"] in {"peninsula.datasource/v1", "peninsula.datasource/v2"}
+    assert " · " not in data["name"]
+    requests = [data["request"]] if "request" in data else list(data["requests"].values())
+    assert requests
+    for request in requests:
+        assert request["method"] in {"GET", "POST", "PUT", "PATCH"}
+        assert request["url"].startswith("https://")
+        assert "interval" not in request
+    assert all(entry["type"] != "secret" for entry in data["inputs"].values())
 
-    request_text = json.dumps(data['request'], ensure_ascii=False)
-    input_refs = set(re.findall(r'\$\{input\.([A-Za-z0-9_]+)\}', request_text))
-    assert input_refs <= set(data['inputs']), f'{file.name}: undeclared input placeholder'
-    # Secret values only travel through string inputs as `$名称$`; PDS files never name them.
-    assert '${secret.' not in request_text, f'{file.name}: ${{secret.*}} is not part of the schema'
+    request_text = json.dumps(requests, ensure_ascii=False)
+    used = set(re.findall(r"\$\{input\.([A-Za-z0-9_]+)\}", request_text))
+    assert used <= set(data["inputs"]), f"{file.name}: undeclared input"
+    assert "${secret." not in request_text
 
-    svg = base64.b64decode(data['icon']['base64']).decode()
-    assert '<text' not in svg.lower(), f'{file.name}: icon text does not render in Peninsula'
-    assert any(tag in svg for tag in ('<path', '<rect', '<circle', '<polygon')), \
-        f'{file.name}: icon needs path geometry'
+    svg = base64.b64decode(data["icon"]["base64"]).decode()
+    assert "<text" not in svg.lower()
+    assert any(mark in svg for mark in ("<path", "<rect", "<circle", "<polygon"))
 
-    if data['id'].startswith(('opencode-', 'deepseek-', 'glm-', 'minimax-')):
-        assert data['alert']['operator'] == 'lt'
-        assert data['alert']['threshold'] == '${input.alert_threshold}'
-        assert data['inputs']['alert_threshold']['type'] == 'number'
-        assert data['inputs']['api_key']['type'] == 'string'
-        assert 'description' not in data['inputs']['api_key']
-        assert 'description' not in data['inputs']['alert_threshold']
-    if data['id'] in {'github-open-prs', 'github-open-issues'}:
-        assert data['request']['url'] == 'https://api.github.com/search/issues'
-        assert data['value']['path'] == '$.total_count'
-        assert data['alert']['operator'] == 'gt'
-        assert data['alert']['threshold'] == '${input.alert_threshold}'
-        assert data['inputs']['owner']['required'] and data['inputs']['repo']['required']
-        assert 'is:pr' in data['request']['query']['q'] if data['id'] == 'github-open-prs' else 'is:issue' in data['request']['query']['q']
-    if data['id'] == 'github-repository-stars':
-        assert data['value']['path'] == '$.stargazers_count'
-        assert 'alert' not in data
+    if data["schema"] == "peninsula.datasource/v1":
+        assert data["value"]["type"] == "number" and data["value"]["path"].startswith("$")
+        assert data["alert"]["operator"] == "lt"
+        assert data["inputs"]["api_key"]["type"] == "string"
+        assert data["inputs"]["alert_threshold"]["type"] == "number"
+    else:
+        assert data["id"] == "github-repository"
+        assert "value" not in data and "alert" not in data
+        assert data["name_template"] == "${input.repo}"
+        assert "request" not in data
+        assert set(data["requests"]) == {"pull_requests", "issues", "repository"}
+        for request in data["requests"].values():
+            assert request["method"] == "GET"
+            assert request["url"].startswith("https://api.github.com/")
+        assert data["requests"]["pull_requests"]["url"] == "https://api.github.com/search/issues"
+        assert data["requests"]["issues"]["url"] == "https://api.github.com/search/issues"
+        assert data["requests"]["repository"]["url"] == "https://api.github.com/repos/${input.owner}/${input.repo}"
+        assert "is:pr is:open" in data["requests"]["pull_requests"]["query"]["q"]
+        assert "is:issue is:open" in data["requests"]["issues"]["query"]["q"]
+        assert set(data["values"]) == {"pull_requests", "issues", "stars"}
+        assert data["values"]["pull_requests"]["request"] == "pull_requests"
+        assert data["values"]["issues"]["request"] == "issues"
+        assert data["values"]["stars"]["request"] == "repository"
+        assert data["values"]["pull_requests"]["value"]["path"] == "$.total_count"
+        assert data["values"]["issues"]["value"]["path"] == "$.total_count"
+        assert data["values"]["stars"]["value"]["path"] == "$.stargazers_count"
+        for metric in ("pull_requests", "issues"):
+            alert = data["values"][metric]["alert"]
+            assert alert["mode"] == "change"
+            assert alert["operator"] == "gt" and alert["threshold"] == 0
+            assert "${delta}" in alert["message"]
+        assert "alert" not in data["values"]["stars"]
 
-assert {file.stem.removesuffix('.pds') for file in files} == {
-    'opencode-go-rolling-remaining', 'opencode-go-weekly-remaining',
-    'opencode-go-monthly-remaining', 'deepseek-cny-balance',
-    'glm-cn-coding-remaining', 'minimax-cn-current-remaining',
-    'github-open-prs', 'github-open-issues', 'github-repository-stars',
-}
-print(f'Checked {len(files)} data sources, GitHub counts, and image icons')
+for brand in ("opencode", "deepseek", "zhipu", "minimax", "github"):
+    assert (root / "public" / "logos" / f"{brand}.svg").exists()
+
+print(f"Checked {len(files)} data sources and brand icons")
