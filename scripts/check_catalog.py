@@ -68,6 +68,7 @@ for file in files:
         assert "alert" not in data["values"]["stars"]
         for metric, label in {"pull_requests": "PR", "issues": "Issue", "stars": "Star"}.items():
             assert data["values"][metric]["capsule_text"] == f"{label}: ${{value}}"
+            assert data["values"][metric]["capsule_layout"] == "two_line"
 
 
 for brand in ("opencode", "deepseek", "zhipu", "minimax", "github"):
