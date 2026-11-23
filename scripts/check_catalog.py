@@ -66,6 +66,9 @@ for file in files:
             assert alert["operator"] == "gt" and alert["threshold"] == 0
             assert "${delta}" in alert["message"]
         assert "alert" not in data["values"]["stars"]
+        for metric, label in {"pull_requests": "PR", "issues": "Issue", "stars": "Star"}.items():
+            assert data["values"][metric]["capsule_text"] == f"{label}: ${{value}}"
+
 
 for brand in ("opencode", "deepseek", "zhipu", "minimax", "github"):
     assert (root / "public" / "logos" / f"{brand}.svg").exists()
