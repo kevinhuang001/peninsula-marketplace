@@ -1,0 +1,93 @@
+{
+  "schema": "peninsula.datasource/v2",
+  "id": "github-repository",
+  "name": "GitHub 仓库",
+  "name_template": "${input.repo}",
+  "description": "一次读取仓库的开放 PR、开放 Issue 和 Star 数。PR 与 Issue 按开放数量净增长提醒。",
+  "icon": {
+    "mime": "image/svg+xml",
+    "base64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxOSIgZmlsbD0iIzM3NDY1NCIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE0IDE0KSBzY2FsZSgxLjUpIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAuMjk3YTEyIDEyIDAgMCAwLTMuNzkzIDIzLjM4NWMuNi4xMTIuODItLjI2LjgyLS41Nzd2LTIuMDRjLTMuMzM4LjcyNC00LjA0My0xLjQxNi00LjA0My0xLjQxNi0uNTQ2LTEuMzg3LTEuMzMzLTEuNzU2LTEuMzMzLTEuNzU2LTEuMDktLjc0NS4wODMtLjcyOS4wODMtLjcyOSAxLjIwNS4wODQgMS44NCAxLjIzNyAxLjg0IDEuMjM3IDEuMDcgMS44MzQgMi44MDYgMS4zMDQgMy40OTIuOTk3LjEwOC0uNzc1LjQxOC0xLjMwNS43NjItMS42MDUtMi42NjUtLjMtNS40NjctMS4zMzMtNS40NjctNS45MzEgMC0xLjMxMS40NjktMi4zODEgMS4yMzYtMy4yMjEtLjEyNC0uMzAzLS41MzYtMS41MjQuMTE4LTMuMTc2IDAgMCAxLjAwOC0uMzIzIDMuMzAxIDEuMjNhMTEuNTIgMTEuNTIgMCAwIDEgNi4wMTMgMGMyLjI5LTEuNTUzIDMuMjk2LTEuMjMgMy4yOTYtMS4yMy42NTYgMS42NTIuMjQ0IDIuODczLjEyIDMuMTc2Ljc3Ljg0IDEuMjM1IDEuOTEgMS4yMzUgMy4yMjEgMCA0LjYxLTIuODA3IDUuNjI5LTUuNDggNS45MjIuNDMuMzcyLjgyMyAxLjEwMi44MjMgMi4yMjJ2My4yODZjMCAuMzIuMjE2LjY5NC44MjUuNTc2QTEyLjAwMSAxMi4wMDEgMCAwIDAgMTIgLjI5N1oiLz48L2c+PC9zdmc+"
+  },
+  "inputs": {
+    "owner": {
+      "type": "string",
+      "label": "仓库所有者",
+      "default": "kevinhuang001",
+      "required": true
+    },
+    "repo": {
+      "type": "string",
+      "label": "仓库名",
+      "default": "peninsula",
+      "required": true
+    },
+    "api_key": {
+      "type": "string",
+      "label": "GitHub Token",
+      "required": true
+    }
+  },
+  "request": {
+    "method": "POST",
+    "url": "https://api.github.com/graphql",
+    "headers": {
+      "Authorization": "Bearer ${input.api_key}",
+      "Accept": "application/vnd.github+json",
+      "User-Agent": "Peninsula-Marketplace"
+    },
+    "body": {
+      "query": "query($owner:String!, $repo:String!){repository(owner:$owner,name:$repo){pullRequests(states:OPEN){totalCount} issues(states:OPEN){totalCount} stargazerCount}}",
+      "variables": {
+        "owner": "${input.owner}",
+        "repo": "${input.repo}"
+      }
+    },
+    "timeout_ms": 10000
+  },
+  "values": {
+    "pull_requests": {
+      "name": "开放 PR",
+      "value": {
+        "path": "$.data.repository.pullRequests.totalCount",
+        "type": "number",
+        "decimals": 0,
+        "separator": true,
+        "suffix": " 个"
+      },
+      "alert": {
+        "mode": "change",
+        "operator": "gt",
+        "threshold": 0,
+        "title": "${input.repo} PR 有增加",
+        "message": "开放 PR 净增 ${delta} 个，目前 ${value}。"
+      }
+    },
+    "issues": {
+      "name": "开放 Issue",
+      "value": {
+        "path": "$.data.repository.issues.totalCount",
+        "type": "number",
+        "decimals": 0,
+        "separator": true,
+        "suffix": " 个"
+      },
+      "alert": {
+        "mode": "change",
+        "operator": "gt",
+        "threshold": 0,
+        "title": "${input.repo} Issue 有增加",
+        "message": "开放 Issue 净增 ${delta} 个，目前 ${value}。"
+      }
+    },
+    "stars": {
+      "name": "Star 数",
+      "value": {
+        "path": "$.data.repository.stargazerCount",
+        "type": "number",
+        "decimals": 0,
+        "separator": true,
+        "suffix": " 个"
+      }
+    }
+  }
+}
