@@ -74,6 +74,8 @@ a { color: inherit; text-decoration: none; }
   display: grid; place-items: center; flex: none; width: 43px; height: 43px;
   border-radius: 11px; color: #fff; font-size: 21px; font-weight: 700;
 }
+ .item-icon img { display: block; width: 25px; height: 25px; object-fit: contain; }
+.detail-icon img { width: 30px; height: 30px; }
 .item-icon.teal { background: #24766f; }
 .item-icon.blue { background: #396bac; }
 .item-icon.purple { background: #6556a4; }
